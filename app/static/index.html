@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar PV Detection Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div>
+          <h1 class="brand-name">Solar PV Detection Engine</h1>
+          <p class="brand-tagline">Google Satellite & Aerial Solar Detection (MiT-B2 Large)</p>
+        </div>
+      </div>
+
+      <div class="header-metadata">
+        <div class="meta-pill">
+          <span class="meta-label">ARCHITECTURE</span>
+          <span class="meta-value">SegFormer MiT-B2 Large</span>
+        </div>
+        <div class="meta-pill">
+          <span class="meta-label">TRAINING CORPUS</span>
+          <span class="meta-value">Google Earth + PV01 + Davis (3,000+ Tiles)</span>
+        </div>
+        <div class="meta-pill">
+          <span class="meta-label">ENGINE</span>
+          <span class="meta-value">PyTorch CPU</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Studio Workspace -->
+    <div class="workspace-grid">
+      <!-- Left Panel: Ingestion & Filter Controls -->
+      <aside class="control-sidebar">
+        <!-- Section 1: Ingestion Source -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <span class="step-indicator">01</span>
+              <h2 class="panel-heading">Imagery Ingestion</h2>
+            </div>
+          </div>
+
+          <!-- Mode Switch Tabs -->
+          <div class="mode-tabs">
+            <button id="tab-presets" class="mode-tab-btn active" onclick="switchInputTab('presets')">
+              Benchmark Presets
+            </button>
+            <button id="tab-upload" class="mode-tab-btn" onclick="switchInputTab('upload')">
+              Custom Upload
+            </button>
+          </div>
+
+          <!-- Preset Grid Container -->
+          <div id="view-presets" class="preset-view-wrapper">
+            <div id="preset-list" class="preset-items-list">
+              <div class="skeleton-preset"></div>
+              <div class="skeleton-preset"></div>
+              <div class="skeleton-preset"></div>
+            </div>
+          </div>
+
+          <!-- File Upload Container -->
+          <div id="view-upload" class="upload-view-wrapper hidden">
+            <div id="dropzone" class="upload-dropzone" onclick="triggerFileInput()">
+              <input type="file" id="file-input" accept="image/png,image/jpeg,image/tiff,image/webp" style="display:none" onchange="handleFileSelected(event)">
+              <div class="dropzone-center">
+                <div class="dropzone-symbol">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <p class="dropzone-main-text">Select or drag aerial imagery</p>
+                <p class="dropzone-sub-text">GeoTIFF, PNG, JPEG up to 20MB</p>
+              </div>
+            </div>
+
+            <div id="upload-preview-container" class="upload-file-card hidden">
+              <img id="upload-preview-img" src="" alt="Tile Preview">
+              <div class="upload-file-details">
+                <span id="upload-file-name" class="file-name">ortho_tile.tif</span>
+                <span id="upload-file-size" class="file-size">1.4 MB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Inference Parameters -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <span class="step-indicator">02</span>
+              <h2 class="panel-heading">Filter Parameters</h2>
+            </div>
+          </div>
+
+          <div class="slider-field">
+            <div class="slider-info-row">
+              <label for="conf-slider" class="field-label">Confidence Gate</label>
+              <span id="conf-val" class="field-output-badge">40%</span>
+            </div>
+            <input type="range" id="conf-slider" min="0.10" max="0.90" step="0.05" value="0.40" class="mono-slider" oninput="updateConfValue(this.value)">
+            <p class="field-help">Filters out candidate bounding proposals below probability.</p>
+          </div>
+
+          <div class="slider-field">
+            <div class="slider-info-row">
+              <label for="area-slider" class="field-label">Minimum Surface Area</label>
+              <span id="area-val" class="field-output-badge">5 m²</span>
+            </div>
+            <input type="range" id="area-slider" min="2" max="30" step="1" value="5" class="mono-slider" oninput="updateAreaValue(this.value)">
+            <p class="field-help">Eliminates rooftop vents, HVAC units, and pixel artifacts.</p>
+          </div>
+
+          <button id="run-btn" class="execute-btn" onclick="runInference()">
+            <span id="btn-spinner" class="btn-spin-icon hidden"></span>
+            <span id="btn-text">Execute Model Inference</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Right Main: Visual Workspace & Analytics -->
+      <section class="studio-viewport-area">
+        <!-- View Controls Toolbar -->
+        <div class="canvas-action-bar">
+          <div class="viewport-modes">
+            <button class="mode-btn active" data-mode="split" onclick="setViewMode('split')">
+              Split Comparison
+            </button>
+            <button class="mode-btn" data-mode="overlay" onclick="setViewMode('overlay')">
+              Overlay
+            </button>
+            <button class="mode-btn" data-mode="side" onclick="setViewMode('side')">
+              Side-by-Side
+            </button>
+            <button class="mode-btn" data-mode="mask" onclick="setViewMode('mask')">
+              Binary Mask
+            </button>
+            <button class="mode-btn" data-mode="heatmap" onclick="setViewMode('heatmap')">
+              Heatmap
+            </button>
+          </div>
+
+          <div class="export-actions">
+            <button id="download-img-btn" class="action-btn" onclick="downloadResultImage()" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Save PNG
+            </button>
+            <button id="export-geojson-btn" class="action-btn" onclick="downloadGeoJSON()" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+              Export GeoJSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Display Canvas -->
+        <div id="viewport-canvas" class="display-canvas-frame">
+          <!-- Empty State View -->
+          <div id="empty-state" class="canvas-empty-state">
+            <div class="empty-icon-box">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <h3 class="empty-state-headline">No Active Tile Rendered</h3>
+            <p class="empty-state-copy">Select a benchmark preset from the left panel or upload custom aerial orthophotos to initiate automated solar array detection.</p>
+          </div>
+
+          <!-- Active Interactive Views -->
+          <div id="active-display" class="canvas-active-state hidden">
+            <!-- Mode 1: Split Slider -->
+            <div id="view-mode-split" class="split-slider-stage" style="--slider-pos: 50%;">
+              <img id="split-img-after" class="split-img-layer after-frame" src="" alt="Detected Solar Arrays">
+              <img id="split-img-before" class="split-img-layer before-frame" src="" alt="Raw Aerial Imagery">
+              
+              <div id="split-slider-handle" class="slider-divider-line">
+                <div class="slider-divider-badge">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="canvas-label-pill pill-before">RAW ORTHOMOSAIC</div>
+              <div class="canvas-label-pill pill-after">SOLAR DETECTION OVERLAY</div>
+
+              <!-- Native range overlay for buttery-smooth cross-platform drag -->
+              <input type="range" id="split-range-input" min="0" max="100" value="50" step="0.1" class="split-native-range" aria-label="Comparison Wipe Slider" oninput="setSplitPosition(this.value)">
+            </div>
+
+            <!-- Mode 2: Single Overlay View -->
+            <div id="view-mode-overlay" class="single-stage-container hidden">
+              <img id="single-overlay-img" class="full-stage-img" src="" alt="Overlay Detection">
+            </div>
+
+            <!-- Mode 3: Side by Side View -->
+            <div id="view-mode-side" class="side-stage-container hidden">
+              <div class="side-stage-pane">
+                <span class="side-pane-label">Raw Aerial</span>
+                <img id="side-img-raw" class="full-stage-img" src="" alt="Raw Aerial">
+              </div>
+              <div class="side-stage-pane">
+                <span class="side-pane-label">Solar PV Array Masks</span>
+                <img id="side-img-pred" class="full-stage-img" src="" alt="Solar PV Overlays">
+              </div>
+            </div>
+
+            <!-- Mode 4: Binary Mask View -->
+            <div id="view-mode-mask" class="single-stage-container hidden">
+              <img id="single-mask-img" class="full-stage-img" src="" alt="Binary Mask">
+            </div>
+
+            <!-- Mode 5: Heatmap View -->
+            <div id="view-mode-heatmap" class="single-stage-container hidden">
+              <img id="single-heatmap-img" class="full-stage-img" src="" alt="Heatmap Output">
+            </div>
+          </div>
+        </div>
+
+        <!-- Wipe Control Strip for precision comparison -->
+        <div id="slider-quick-bar" class="slider-quick-bar">
+          <div class="slider-quick-label">
+            <span>COMPARISON WIPE</span>
+            <span id="wipe-percent-label" class="wipe-val">50%</span>
+          </div>
+          <div class="quick-preset-pills">
+            <button class="pill-btn" onclick="setSplitPosition(0)">100% Overlay</button>
+            <button class="pill-btn active" onclick="setSplitPosition(50)">50/50 Split</button>
+            <button class="pill-btn" onclick="setSplitPosition(100)">100% Raw</button>
+          </div>
+        </div>
+
+        <!-- Telemetry Metrics Grid -->
+        <div class="telemetry-grid">
+          <div class="telemetry-card">
+            <span class="metric-tag">ARRAYS DETECTED</span>
+            <span id="stat-count" class="metric-number emphasis">0</span>
+          </div>
+          <div class="telemetry-card">
+            <span class="metric-tag">SURFACE AREA</span>
+            <span id="stat-area" class="metric-number">0.00 m²</span>
+          </div>
+          <div class="telemetry-card">
+            <span class="metric-tag">EST. CAPACITY</span>
+            <span id="stat-kw" class="metric-number">0.00 kW</span>
+          </div>
+          <div class="telemetry-card">
+            <span class="metric-tag">ANNUAL GENERATION</span>
+            <span id="stat-kwh" class="metric-number">0 kWh/yr</span>
+          </div>
+          <div class="telemetry-card">
+            <span class="metric-tag">CO2 OFFSET</span>
+            <span id="stat-co2" class="metric-number">0.00 Tons/yr</span>
+          </div>
+          <div class="telemetry-card">
+            <span class="metric-tag">INFERENCE LATENCY</span>
+            <span id="stat-latency" class="metric-number">-- ms</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

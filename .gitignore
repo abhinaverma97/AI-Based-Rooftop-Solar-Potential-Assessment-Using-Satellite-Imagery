@@ -1,0 +1,45 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+app/.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# Geospatial data & heavy rasters
+*.tif
+*.tiff
+*.geotiff
+*.img
+temp_data/
+data/
+chips_*/
+yolo_solar_dataset/
+
+# Training run logs and checkpoint weights (>100MB)
+trained_models*/
+solar_yolo_runs/
+runs/
+*.pth
+*.pt
+*.onnx
+*.engine
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment variables
+.env
+.env.local
