@@ -1,6 +1,6 @@
 # Automated Rooftop Solar Photovoltaic Detection & Potential Assessment
 
-[![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model%20Hub-yellow.svg)](https://huggingface.co/abhinav03700/solar-panel-segformer-mit-b2)
+[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Model%20Hub-yellow.svg)](https://huggingface.co/abhinav03700/solar-panel-segformer-mit-b2)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -10,18 +10,18 @@ An end-to-end deep learning framework, cross-literature state-of-the-art benchma
 
 ---
 
-## 🌟 Key Highlights & Innovations
+## Key Highlights & Innovations
 
 1. **Multi-Scale Scale-Invariance ($0.4\times \to 1.6\times$):** Overcomes the severe satellite zoom factor across Google Maps / Google Earth captures (Zoom 17 to 20), resolving arrays ranging from $15\text{ px}$ to $150\text{ px}$ across.
 2. **False-Positive Suppression (Hard-Negative Mining):** Ingests over 2,400 authentic un-panelled negative structures (skylights, HVAC vents, asphalt roads, white membranes) to eliminate false alarms.
 3. **Compound Boundary-Aware Loss:** Combines Binary Cross-Entropy, Soft Dice, and a **Laplacian edge boundary loss** to enforce crisp, orthogonal $90^\circ$ rectangular panel borders.
 4. **Cross-Literature Empirical SOTA:** Evaluated on an independent, frozen test set of 400 Google Earth satellite images from the **BDAPPV benchmark (*Nature Scientific Data*, 2023)** directly against official open-source weights from **Fraunhofer ISE**, **UPM Madrid**, and **Microsoft AI for Good**.
-5. **Interactive Web Application:** Built with FastAPI, modern glassmorphic UI, real-time multi-scale inference, polygon regularization, and GeoJSON export.
+5. **Interactive Web Application:** Built with FastAPI, modern user interface, real-time multi-scale inference, polygon regularization, and GeoJSON export.
 6. **Pretrained Model Hub:** Weights publicly hosted and downloadable on [Hugging Face (`abhinav03700/solar-panel-segformer-mit-b2`)](https://huggingface.co/abhinav03700/solar-panel-segformer-mit-b2).
 
 ---
 
-## 🔬 Cross-Literature State-of-the-Art Benchmark
+## Cross-Literature State-of-the-Art Benchmark
 
 All models were evaluated on the **exact same frozen test set of 400 Google Earth satellite images** from the **BDAPPV benchmark** (*Nature Scientific Data*, 2023; Kasmi et al.) on an NVIDIA Tesla T4 GPU with a fixed decision threshold ($\tau = 0.50$):
 
@@ -37,7 +37,7 @@ All models were evaluated on the **exact same frozen test set of 400 Google Eart
 
 ---
 
-## 📊 Exploratory Baseline Benchmark (Stage 1)
+## Exploratory Baseline Benchmark (Stage 1)
 
 Preliminary baseline implementations benchmarked under identical controls on high-resolution ($0.15\text{ m/px}$) aerial orthophotography (Davis, CA):
 
@@ -53,7 +53,7 @@ Preliminary baseline implementations benchmarked under identical controls on hig
 
 ---
 
-## 🖼️ Qualitative Benchmark Visualizations
+## Qualitative Benchmark Visualizations
 
 ### 1. Cross-Literature Comparison Across 4 Test Cases (BDAPPV)
 Side-by-side inference across challenging real-world scenes: (1) Suburban residential roofs, (2) Large commercial flat concrete, (3) Industrial corrugated metal, and (4) Hard-negative un-panelled roof:
@@ -73,18 +73,18 @@ Sliding-window evaluation across the unseen test orthomosaic:
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
-├── app/                                      # 🚀 Interactive Web Application (FastAPI + Modern UI)
-│   ├── server.py                             # Inference server (auto-downloads weights from HF if missing)
+├── app/                                      # Interactive Web Application (FastAPI + Modern UI)
+│   ├── server.py                             # Inference server
 │   ├── verify_app.py                         # Test suite for API endpoints & model inference
 │   ├── requirements.txt                      # Web application dependencies
 │   ├── README.md                             # Quick-start instructions
 │   ├── samples/                              # 5 preset benchmark satellite & aerial tiles
-│   └── static/                               # Modern Glassmorphic Web Interface (HTML/CSS/JS)
+│   └── static/                               # Web Interface (HTML/CSS/JS)
 │
-├── notebooks/                                # 📓 Complete Reproducible Jupyter Notebooks
+├── notebooks/                                # Complete Reproducible Jupyter Notebooks
 │   ├── benchmark_inference.ipynb             # Cross-Literature SOTA Benchmark (evaluates 6 models)
 │   ├── solar_segformer_google_satellite_large.ipynb # Flagship: Multi-Scale SegFormer (7k Tiles)
 │   ├── solar_segformer_mit.ipynb             # Baseline SegFormer (MiT-B2)
@@ -93,7 +93,7 @@ Sliding-window evaluation across the unseen test orthomosaic:
 │   ├── solar_deeplabv3plus.ipynb             # DeepLabV3+ ResNet-101 baseline
 │   └── solar_yolov8_seg.ipynb                # YOLOv8m-seg baseline
 │
-├── paper/                                    # 📄 Research Paper Manuscripts & LaTeX
+├── paper/                                    # Research Paper Manuscripts & LaTeX
 │   ├── latex/
 │   │   ├── Research_paper.tex                # Primary IEEE Conference Manuscript (Complete)
 │   │   ├── paper.tex                         # Synchronized IEEE LaTeX source
@@ -101,13 +101,14 @@ Sliding-window evaluation across the unseen test orthomosaic:
 │   └── paper.typ                             # Typst source manuscript
 │
 ├── presentation.pdf                          # Executive presentation slide deck
+├── requirements.txt                          # Top-level project dependencies
 ├── LICENSE                                   # MIT License
 └── README.md                                 # Project documentation
 ```
 
 ---
 
-## ⚡ Quickstart: Running the Web App
+## Quickstart: Running the Web App
 
 1. **Download the model weights:**
    * Download [`best_segformer_large.pth`](https://huggingface.co/abhinav03700/solar-panel-segformer-mit-b2/resolve/main/best_segformer_large.pth) (99 MB) from Hugging Face.
@@ -132,7 +133,7 @@ Sliding-window evaluation across the unseen test orthomosaic:
 
 ---
 
-## 📜 Citation
+## Citation
 
 If you find this benchmark, code, or model weights useful in your research, please cite:
 
